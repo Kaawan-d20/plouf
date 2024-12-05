@@ -9,7 +9,7 @@
 <body>
     <div id="canvas">
         <div id="bato">
-            <img src="../assets/boat.png" alt="bato">
+            <img src="../assets/boat.gif" alt="bato">
         </div>
 
         <div id="generateurs">
@@ -28,7 +28,7 @@
         width: 100dvw;
         height : 100dvh;
         cursor : none;
-        background-image: url("../assets/water-tile.png");
+        background-image: url("../assets/water-tile.gif");
     }
 
     #bato {
@@ -60,8 +60,8 @@
         /*gen_array[i].style.height = */
         generateurs.appendChild(gen_array[i]);
 
-        let temp = document.createElement('p')
-        gen_array[i].appendChild().textContent(i);
+        //let temp = document.createElement('p')
+        //gen_array[i].appendChild().textContent(i);
     }
 
     canvas.addEventListener('mousemove', (e) => {
