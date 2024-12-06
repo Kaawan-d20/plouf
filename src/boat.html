@@ -7,13 +7,12 @@
 </head>
 
 <body>
+    <div id="score">
+        000
+    </div>
     <div id="canvas">
         <div id="bato">
             <img src="../assets/boat.gif" alt="bato">
-        </div>
-
-        <div id="generateurs">
-
         </div>
     </div>
 
@@ -40,6 +39,15 @@
         transform : scaleX(-1);
     }
 
+    .trash, .critter {
+        top : 0;
+        left : 0;
+        position: absolute; /* Nécessaire pour pouvoir changer la position */
+        cursor: grab; /* Change le curseur pour indiquer un élément déplaçable */
+        cursor : none;
+        transform : scaleX(-1);  
+    }
+
     #generateurs {
         color: blue;
     }
@@ -47,36 +55,127 @@
 <script>
     let bato = document.getElementById("bato");
     let canvas = document.getElementById("canvas"); 
-    let generateurs = document.getElementById("generateurs");
-    let gen_array = [];
 
     let bato_x = 100, bato_y = 100;
-    let nb_generateurs = 5;
 
-    for (let i = 0; i < nb_generateurs; i++){
-        gen_array.push(document.createElement('div'));
-        gen_array[i].style.left = 0;
-        gen_array[i].style.top = `${(100 - (100/nb_generateurs))}%`;
-        /*gen_array[i].style.height = */
-        generateurs.appendChild(gen_array[i]);
+    let floatingEntities = [];
 
-        //let temp = document.createElement('p')
-        //gen_array[i].appendChild().textContent(i);
+    let score = 0;
+
+    let trashTypes = [
+        "bag",
+        "bottle",
+        "mask"
+    ]
+    let critterTypes = [
+        "turtle",
+        "blahaj"
+    ]
+
+    function incrementScore() {
+        score++;
+        document.getElementById("score").innerHTML = String(score).padStart(3,"0");
     }
 
-    canvas.addEventListener('mousemove', (e) => {
-        if (e.clientX < parseInt(bato.style.left.slice(0, -2))){
-            if (Math.abs(e.clientX - parseInt(bato.style.left.slice(0, -2))) > 1){
-                
-                bato.style.transform = `scaleX(-1)`
+    function elementsOverlap(el1, el2) {
+        const domRect1 = el1.getBoundingClientRect();
+        const domRect2 = el2.getBoundingClientRect();
+        return !(
+            domRect1.top > domRect2.bottom ||
+            domRect1.right < domRect2.left ||
+            domRect1.bottom < domRect2.top ||
+            domRect1.left > domRect2.right
+        );
+    }
+
+    function init () {    
+        canvas.addEventListener('mousemove', (e) => {
+            if (e.clientX < parseInt(bato.style.left.slice(0, -2))){
+                if (Math.abs(e.clientX - parseInt(bato.style.left.slice(0, -2))) > 1){
+                    
+                    bato.style.transform = `scaleX(-1)`
+                }
+            } else {
+                if (Math.abs(e.clientX - parseInt(bato.style.left.slice(0, -2))) > 1){
+                    bato.style.transform = `scaleX(1)`
+                }       
             }
+            bato.style.left = `${e.clientX}px`;
+            bato.style.top = `${e.clientY}px`;
+        });
+        gameLoop();
+    }
+
+    function summonTrash() {
+        let newTrash = document.createElement('div');
+        let newTrashImage = document.createElement('img');
+        newTrashImage.setAttribute("src", "../assets/" + trashTypes[(Math.random() * trashTypes.length) | 0] + ".png");
+        newTrash.appendChild(newTrashImage)
+        newTrash.classList.add("trash");
+        canvas.appendChild(newTrash);
+        newTrash.style.top = `${(Math.random()*100)}dvh`;
+        newTrash.style.left = "0px";
+        floatingEntities.push(newTrash);
+    }
+
+    function summonCritter() {
+        let newCritter = document.createElement('div');
+        let newCritterImage = document.createElement('img');
+        newCritterImage.setAttribute("src", "../assets/" + critterTypes[(Math.random() * critterTypes.length) | 0] + ".png");
+        newCritter.appendChild(newCritterImage)
+        newCritter.classList.add("critter");
+        canvas.appendChild(newCritter);
+        newCritter.style.top = `${(Math.random()*100)}dvh`;
+        newCritter.style.left = "0px";
+        floatingEntities.push(newCritter);
+    }
+
+    function checkDetections() {
+        console.log("yes")
+        floatingEntities.forEach((entity) => {
+            if (elementsOverlap(entity, bato)) {
+                console.log("overlap");
+                if ("trash" in entity.classList) {
+                    incrementScore();
+                    entity.remove();
+                } else {
+                    gameOver();
+                }
+            } else {
+                console.log("move");
+                console.log(entity.style.left);
+            }
+        });
+    }
+
+    function summon() {
+        if (Math.random() > .5) {
+            summonCritter();
         } else {
-            if (Math.abs(e.clientX - parseInt(bato.style.left.slice(0, -2))) > 1){
-                bato.style.transform = `scaleX(1)`
-            }       
+            summonTrash();
         }
-        bato.style.left = `${e.clientX}px`;
-        bato.style.top = `${e.clientY}px`;
-    });
+    }
+
+    async function gameLoop() {
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        summon()
+        console.log(floatingEntities)
+        // while (true) {
+        //     checkDetections();
+        // }
+    }
+
+    init();
+
 </script>
 </html>
