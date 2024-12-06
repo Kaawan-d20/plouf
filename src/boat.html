@@ -7,10 +7,10 @@
 </head>
 
 <body>
-    <div id="score">
-        000
-    </div>
     <div id="canvas">
+        <div id="score">
+            000
+        </div>
         <div id="bato">
             <img src="../assets/boat.gif" alt="bato">
         </div>
@@ -19,8 +19,34 @@
 
 </body>
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Anton+SC&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Faculty+Glyphic&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+    
     body{
         margin : 0;
+    }
+
+    #score {
+        position: absolute;
+        top: 0;
+        left: 0;
+        font-size: xx-large;
+        padding: 2em;
+        font-family: "Anton SC", sans-serif;
+    }
+
+    #gameover {
+        font-family: "Anton SC", sans-serif;
+        margin: auto;
+    }
+    
+    #gameover h1 {
+        font-size: 96pt;
+        margin: 0;
+    }
+
+    #gameover p {
+        font-size: 70pt;
+        margin: 0;
     }
 
     #canvas {
@@ -28,6 +54,9 @@
         height : 100dvh;
         cursor : none;
         background-image: url("../assets/water-tile.gif");
+        display: flex;
+        justify-content:baseline;
+        align-items: center;
     }
 
     #bato {
@@ -37,6 +66,7 @@
         cursor: grab; /* Change le curseur pour indiquer un élément déplaçable */
         cursor : none;
         transform : scaleX(-1);
+        /* background-color: red; */
     }
 
     .trash, .critter {
@@ -45,7 +75,8 @@
         position: absolute; /* Nécessaire pour pouvoir changer la position */
         cursor: grab; /* Change le curseur pour indiquer un élément déplaçable */
         cursor : none;
-        transform : scaleX(-1);  
+        transform : scaleX(-1);
+        /* background-color: rebeccapurple;  */
     }
 
     #generateurs {
@@ -56,7 +87,7 @@
     let bato = document.getElementById("bato");
     let canvas = document.getElementById("canvas"); 
 
-    let bato_x = 100, bato_y = 100;
+    let bato_x = 400, bato_y = 400;
 
     let floatingEntities = [];
 
@@ -71,6 +102,17 @@
         "turtle",
         "blahaj"
     ]
+
+    async function animate_title () {
+        i = 0;
+        while (true) {
+            document.title = "_".repeat(21-i) + "🚢~-." + "_".repeat(i+1)
+            i = (i+1) % 21;
+            await new Promise(r => setTimeout(r, 2000));
+        }
+    }
+
+    animate_title()
 
     function incrementScore() {
         score++;
@@ -103,7 +145,6 @@
             bato.style.left = `${e.clientX}px`;
             bato.style.top = `${e.clientY}px`;
         });
-        gameLoop();
     }
 
     function summonTrash() {
@@ -131,51 +172,72 @@
     }
 
     function checkDetections() {
-        console.log("yes")
-        floatingEntities.forEach((entity) => {
+        for (i =0; i < floatingEntities.length; ++i) {
+            let entity = floatingEntities[i]
             if (elementsOverlap(entity, bato)) {
-                console.log("overlap");
-                if ("trash" in entity.classList) {
+                if (entity.className == "trash") {
                     incrementScore();
                     entity.remove();
                 } else {
-                    gameOver();
+                    return true;
                 }
             } else {
-                console.log("move");
-                console.log(entity.style.left);
+                let left = parseInt(entity.style.left.substring(0, entity.style.left.length -2), 10) + 1;
+                if (left >= canvas.clientWidth) {
+                    entity.remove();
+                } else {
+                    entity.style.left = left + "px";
+                }
             }
-        });
+            
+        }
+        return false;
     }
 
-    function summon() {
+    async function summon() {
         if (Math.random() > .5) {
             summonCritter();
         } else {
             summonTrash();
         }
+
     }
 
     async function gameLoop() {
+        let i = 0;
         summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        summon()
-        console.log(floatingEntities)
-        // while (true) {
-        //     checkDetections();
-        // }
+        while (true) {
+            i = i+1;
+            if (checkDetections()) {          
+                gameOver();
+                return;
+            }
+            console.log(i)
+            await new Promise(r => setTimeout(r, 10));
+            if (i >= 50) {
+                summon();
+                i = 0;  
+            }
+                        
+        }
     }
 
+    function gameOver() {
+        console.log("done");
+        let block = document.createElement("div");
+        let title = document.createElement("h1");
+        let reload = document.createElement("p")
+        title.innerHTML = "GAME OVER : " + String(score).padStart(3,"0");
+        block.id = "gameover";
+        reload.innerHTML = "press ctrl+R to replay"
+        block.appendChild(title);
+        block.appendChild(reload)
+        document.getElementById("score").remove();
+        canvas.appendChild(block)
+    }
     init();
+    gameLoop();
+    // console.log("finished")
 
 </script>
 </html>
